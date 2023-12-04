@@ -15,7 +15,10 @@ def signUp():
     user_passwd = req['user_passwd']
     
     res = signup.add_user(user_name=user_name, user_sn=user_sn, user_mail=user_mail, user_passwd=user_passwd)
-    return res
+    if res==true:
+        return "success"
+    else:
+        return "fail"
 
 if __name__ == '__main__':
     app.run(port='3000')
