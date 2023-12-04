@@ -1,7 +1,8 @@
 from ldap3 import Server, Connection, ALL, SUBTREE
 from ldap3.core.exceptions import LDAPException, LDAPBindError
-import os
+from controllers import kc_user, kc_group
 import xml.etree.ElementTree as elemTree
+import time
 tree = elemTree.parse('keys.xml')
 
 def connect_ldap_server():
@@ -35,8 +36,17 @@ def add_group(user_name):
         ldap_attr['memberUid'] = user_name
         response = ldap_conn.add('cn='+user_name+'@admin'+',ou=groups,cn=admin,dc=devstack,dc=co,dc=kr',
                                     attributes=ldap_attr)
-
+        time.sleep(1)
         #os.environ['LDAP_NEW_GID'] = str(int(os.getenv('LDAP_NEW_GID')) + 3);
+        kc_group.post_admin_access_token()
+        kc_group.get_client_id()
+        kc_group.get_group(user_name=user_name)
+        kc_group.get_client_role()
+        kc_group.put_join_group(user_name)
+        kc_group.put_group_attribute(user_name=user_name)
+        kc_group.post_group_role_mapping()
+
+
     except LDAPException as e:
         response = (" The error is ", e)
 
@@ -44,11 +54,11 @@ def add_group(user_name):
     print(response)
     return response
 
-def add_user(user_name, user_sn, user_mail, user_passwd):
+def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
     ldap_attr = {}
     ldap_attr['cn'] = user_name 
     ldap_attr['sn'] = user_sn 
-    #ldap_attr['givenName'] = user_gname
+    ldap_attr['givenName'] = user_gname
     ldap_attr['mail'] = user_mail
     #ldap_attr['userPassword'] = os.getenv('LDAP_NEW_USER_PASSWD')
 
@@ -59,7 +69,12 @@ def add_user(user_name, user_sn, user_mail, user_passwd):
         response = ldap_conn.add(dn=user_dn,
                                 object_class='inetOrgPerson',
                                 attributes=ldap_attr)
+        time.sleep(1)
         add_group(user_name)
+        
+        kc_user.get_user_id(user_name=user_name)
+        kc_user.put_user_password(user_passwd=user_passwd)
+        kc_user.put_email_verified()
 
     except LDAPException as e:
         response = e
