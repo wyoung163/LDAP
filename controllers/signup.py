@@ -42,9 +42,6 @@ def add_group(user_name):
         kc_group.get_client_id()
         kc_group.get_group(user_name=user_name)
         kc_group.get_client_role()
-        kc_group.put_join_group(user_name)
-        kc_group.put_group_attribute(user_name=user_name)
-        kc_group.post_group_role_mapping()
 
 
     except LDAPException as e:

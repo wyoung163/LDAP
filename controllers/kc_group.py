@@ -2,14 +2,15 @@ import requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
 from controllers import kc_user
+from controllers import gf_group
 
 url = tree.find('string[@name="KC_URL"]').text
 access_token = ""
 client_id = ""
 role_id = ""
 role_name = ""
-group_id = ""
-group_name = ""
+group_id = []
+group_name = []
 user_id = ""
 
 # admin-cli access-token
@@ -36,7 +37,7 @@ def get_client_id():
        "Content-Type": "application/json",
         "Authorization": "Bearer " + access_token 
     }
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients?clientId="+tree.find('string[@name="KC_CLIENT_ID"]').text,
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients?clientId="+tree.find('string[@name="KC_OS_CLIENT_ID"]').text,
                        headers=headers,
                        verify=False)
     global client_id
@@ -48,12 +49,20 @@ def get_group(user_name):
        "Content-Type": "application/json",
         "Authorization": "Bearer " + access_token 
     }
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@admin",
+    roles = ['admin', 'editor', 'viewer']
+    for role in roles:
+        res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role,
                        headers=headers,
                        verify=False)
-    global group_name, group_id
-    group_id = res.json()[0].get("id")
-    group_name = res.json()[0].get("name")
+        print(res.json())
+        global group_name, group_id
+        group_id = res.json()[0].get("id")
+        group_name = res.json()[0].get("name")
+        put_group_attribute(user_name=user_name)
+        get_user_id(user_name=user_name)
+        put_join_group(user_name=user_name)
+        gf_group.client_id(group_id, role)
+        post_group_role_mapping()
 
 def get_client_role():
     headers = {
