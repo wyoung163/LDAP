@@ -1,6 +1,6 @@
 from ldap3 import Server, Connection, ALL, SUBTREE
 from ldap3.core.exceptions import LDAPException, LDAPBindError
-from controllers import kc_user, kc_group
+from controllers import kc_user, kc_group, kc_client
 import xml.etree.ElementTree as elemTree
 import time
 tree = elemTree.parse('keys.xml')
@@ -38,10 +38,9 @@ def add_group(user_name):
                                     attributes=ldap_attr)
         time.sleep(1)
         #os.environ['LDAP_NEW_GID'] = str(int(os.getenv('LDAP_NEW_GID')) + 3);
-        kc_group.post_admin_access_token()
-        kc_group.get_client_id()
+        kc_client.post_admin_access_token()
+        kc_client.get_client_id()
         kc_group.get_group(user_name=user_name)
-        kc_group.get_client_role()
 
 
     except LDAPException as e:
@@ -69,9 +68,9 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
         time.sleep(1)
         add_group(user_name)
         
-        kc_user.get_user_id(user_name=user_name)
-        kc_user.put_user_password(user_passwd=user_passwd)
-        kc_user.put_email_verified()
+        #kc_user.get_user_id(user_name=user_name)
+        #kc_user.put_user_password(user_passwd=user_passwd)
+        kc_user.put_email_verified(user_name=user_name)
 
     except LDAPException as e:
         response = e
