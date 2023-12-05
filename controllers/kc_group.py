@@ -9,9 +9,10 @@ access_token = ""
 client_id = ""
 role_id = ""
 role_name = ""
-group_id = []
-group_name = []
+group_id = ""
+group_name = ""
 user_id = ""
+gf_role = ""
 
 # admin-cli access-token
 params = {
@@ -54,14 +55,15 @@ def get_group(user_name):
         res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role,
                        headers=headers,
                        verify=False)
-        print(res.json())
+        global gf_role
+        gf_role = role
         global group_name, group_id
         group_id = res.json()[0].get("id")
         group_name = res.json()[0].get("name")
         put_group_attribute(user_name=user_name)
         get_user_id(user_name=user_name)
         put_join_group(user_name=user_name)
-        gf_group.client_id(group_id, role)
+        gf_group.get_client_id()
         post_group_role_mapping()
 
 def get_client_role():

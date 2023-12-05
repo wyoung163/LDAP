@@ -8,7 +8,7 @@ client_id = ""
 role_id = ""
 role_name = ""
 
-def get_client_id(group_id, role):
+def get_client_id():
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_group.access_token
@@ -18,9 +18,10 @@ def get_client_id(group_id, role):
                        verify=False)
     global client_id
     client_id = res.json()[0].get("id")
-    get_client_role(group_id, role)
+    get_client_role()
 
-def get_client_role(group_id, role):
+def get_client_role():
+    role = kc_group.gf_role
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_group.access_token
@@ -38,9 +39,9 @@ def get_client_role(group_id, role):
     global role_name, role_id
     role_id = res.json()[0].get("id")
     role_name = res.json()[0].get("name")
-    post_group_role_mapping(group_id)
+    post_group_role_mapping()
 
-def post_group_role_mapping(group_id):
+def post_group_role_mapping():
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_group.access_token 
@@ -49,7 +50,7 @@ def post_group_role_mapping(group_id):
         "id": role_id,
         "name": role_name
     }]
-    res = requests.post(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id+"/role-mappings/clients/"+client_id,
+    res = requests.post(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+kc_group.group_id+"/role-mappings/clients/"+client_id,
                         headers=headers,
                         json=data,
                         verify=False)
