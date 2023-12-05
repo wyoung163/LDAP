@@ -27,9 +27,9 @@ class signUp(Resource):
         
         res = signup.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd)
         if res == True:
-            return "success"
+            return "{ Success: true }"
         else:
-            return "fail"
+            return "{ Success: False }"
 
 if __name__ == '__main__':
     app.run(port='3000')
