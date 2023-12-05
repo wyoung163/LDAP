@@ -6,6 +6,7 @@ from controllers import kc_group
 url = tree.find('string[@name="KC_URL"]').text
 user_id = ""
 
+# 사용자 id 조회
 def get_user_id(user_name):
     headers = {
        "Content-Type": "application/json",
@@ -19,6 +20,7 @@ def get_user_id(user_name):
     global user_id
     user_id = res.json()[0].get("id")
 
+# 사용자 이메일 허용 여부 true로 수정
 def put_email_verified():
     headers = {
        "Content-Type": "application/json",
