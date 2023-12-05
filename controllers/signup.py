@@ -1,4 +1,4 @@
-from ldap3 import Server, Connection, ALL, SUBTREE
+from ldap3 import Server, Connection, ALL
 from ldap3.core.exceptions import LDAPException, LDAPBindError
 from controllers import kc_user, kc_group, kc_client
 import xml.etree.ElementTree as elemTree
@@ -15,7 +15,6 @@ def connect_ldap_server():
         bind_response = connection.bind() 
     except LDAPBindError as e:
         connection = e
-    print(bind_response)
     return connection
 
 def add_group(user_name):
@@ -37,7 +36,6 @@ def add_group(user_name):
         response = ldap_conn.add('cn='+user_name+'@admin'+',ou=groups,cn=admin,dc=devstack,dc=co,dc=kr',
                                     attributes=ldap_attr)
         time.sleep(1)
-        #os.environ['LDAP_NEW_GID'] = str(int(os.getenv('LDAP_NEW_GID')) + 3);
         kc_client.post_admin_access_token()
         kc_client.get_client_id()
         kc_group.get_group(user_name=user_name)
@@ -74,5 +72,4 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
 
     except LDAPException as e:
         response = e
-    print(response)
     return response
