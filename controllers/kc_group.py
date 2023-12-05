@@ -14,7 +14,7 @@ group_name = ""
 user_id = ""
 gf_role = ""
 
-# admin-cli access-token
+# admin-cli access-token 조회
 params = {
     "grant_type": "password",
     "client_secret": tree.find('string[@name="KC_ADMIN_CLIENT_SECRET"]').text,
@@ -23,7 +23,6 @@ params = {
     "password": tree.find('string[@name="KC_ADMIN_PASSWD"]').text,
     "scope": "openid"
 }
-
 def post_admin_access_token():
     res = requests.post(url+"realms/master/protocol/openid-connect/token", 
                         data=params,
@@ -33,6 +32,7 @@ def post_admin_access_token():
     access_token = res.json().get("access_token")
     return
 
+# Openstack client id 조회
 def get_client_id():
     headers = {
        "Content-Type": "application/json",
@@ -45,6 +45,7 @@ def get_client_id():
     client_id = res.json()[0].get("id")
     return
 
+# role group(admin, editor, viewer) 조회
 def get_group(user_name):
     headers = {
        "Content-Type": "application/json",
@@ -66,6 +67,7 @@ def get_group(user_name):
         gf_group.get_client_id()
         post_group_role_mapping()
 
+# openstack client role 조회
 def get_client_role():
     headers = {
         "Content-Type": "application/json",
@@ -78,6 +80,7 @@ def get_client_role():
     role_id = res.json()[0].get("id")
     role_name = res.json()[0].get("name")
 
+# group attribute에 project name 추가
 def put_group_attribute(user_name):
     headers = {
        "Content-Type": "application/json",
@@ -97,6 +100,7 @@ def put_group_attribute(user_name):
                        verify=False)
     print(res)
 
+# 사용자 id 조회
 def get_user_id(user_name):
     headers = {
        "Content-Type": "application/json",
@@ -110,6 +114,7 @@ def get_user_id(user_name):
     global user_id
     user_id = res.json()[0].get("id")
 
+# 사용자 group member로 join
 def put_join_group(user_name):
     get_user_id(user_name)
     headers = {
@@ -121,7 +126,7 @@ def put_join_group(user_name):
                        verify=False)
     print("join", res)
 
-
+# openstack (member) role mapping
 def post_group_role_mapping():
     headers = {
        "Content-Type": "application/json",
