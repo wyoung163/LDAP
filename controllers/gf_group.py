@@ -8,6 +8,7 @@ client_id = ""
 role_id = ""
 role_name = ""
 
+# grfana client id 조회
 def get_client_id():
     headers = {
        "Content-Type": "application/json",
@@ -20,6 +21,7 @@ def get_client_id():
     client_id = res.json()[0].get("id")
     get_client_role()
 
+# grafana client role(projectAdmin, projectEditor, projectViewer) 조회
 def get_client_role():
     role = kc_group.gf_role
     headers = {
@@ -41,6 +43,7 @@ def get_client_role():
     role_name = res.json()[0].get("name")
     post_group_role_mapping()
 
+# 각 role group에 role mapping
 def post_group_role_mapping():
     headers = {
        "Content-Type": "application/json",
