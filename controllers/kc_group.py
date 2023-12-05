@@ -1,7 +1,7 @@
 import requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
-from controllers import kc_user, kc_client, gf_group
+from controllers import kc_user, kc_client, gf_group, os_group
 
 url = tree.find('string[@name="KC_URL"]').text
 role_id = ""
@@ -26,25 +26,11 @@ def get_group(user_name):
         global group_name, group_id
         group_id = res.json()[0].get("id")
         group_name = res.json()[0].get("name")
-        get_client_role()
         put_group_attribute(user_name=user_name)
         kc_user.get_user_id(user_name=user_name)
         put_join_group(user_name=user_name) 
-        post_group_role_mapping() #openstack role mapping
+        os_group.post_group_role_mapping() #openstack role mapping
         gf_group.post_group_role_mapping() #grafana role mapping
-
-# openstack client role 조회
-def get_client_role():
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + kc_client.access_token 
-    }
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients/"+kc_client.client_id+"/roles?search=member",
-                       headers=headers, 
-                       verify=False)
-    global role_name, role_id
-    role_id = res.json()[0].get("id")
-    role_name = res.json()[0].get("name")
 
 # group attribute에 project name 추가
 def put_group_attribute(user_name):
@@ -76,17 +62,3 @@ def put_join_group(user_name):
                        headers=headers,
                        verify=False)
     
-# openstack (member) role mapping
-def post_group_role_mapping():
-    headers = {
-       "Content-Type": "application/json",
-        "Authorization": "Bearer " + kc_client.access_token 
-    }
-    data = [{
-        "id": role_id,
-        "name": role_name
-    }]
-    res = requests.post(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id+"/role-mappings/clients/"+kc_client.client_id,
-                        headers=headers,
-                        json=data,
-                        verify=False)
