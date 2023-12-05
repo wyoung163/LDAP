@@ -8,30 +8,22 @@ client_id = ""
 role_id = ""
 role_name = ""
 
-# grafana client role(projectAdmin, projectEditor, projectViewer) 조회
+# openstack client role 조회
 def get_client_role():
     global client_id
-    client_id = kc_client.get_client_id(tree.find('string[@name="KC_GF_CLIENT_ID"]').text)
-    role = kc_group.gf_role
+    client_id = kc_client.get_client_id(tree.find('string[@name="KC_OS_CLIENT_ID"]').text)
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + kc_client.access_token
+        "Authorization": "Bearer " + kc_client.access_token 
     }
-    if role == "admin":
-        gf_role = "projectAdmin"
-    elif role == "editor": 
-        gf_role = "projectEditor"
-    else: 
-        gf_role = "projectViewer"
-
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients/"+client_id+"/roles?search="+gf_role,
-                    headers=headers, 
-                    verify=False)
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients/"+client_id+"/roles?search=member",
+                       headers=headers, 
+                       verify=False)
     global role_name, role_id
     role_id = res.json()[0].get("id")
     role_name = res.json()[0].get("name")
 
-# 각 role group에 role mapping
+# openstack (member) role mapping
 def post_group_role_mapping():
     get_client_role()
     headers = {

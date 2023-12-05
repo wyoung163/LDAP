@@ -6,7 +6,6 @@ from controllers import gf_group
 
 url = tree.find('string[@name="KC_URL"]').text
 access_token = ""
-client_id = ""
 
 # admin-cli access-token 조회
 params = {
@@ -24,17 +23,15 @@ def post_admin_access_token():
     #print(res.json())
     global access_token
     access_token = res.json().get("access_token")
-    return
 
-# Openstack client id 조회
-def get_client_id():
+# client id 조회
+def get_client_id(clientId):
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + access_token 
     }
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients?clientId="+tree.find('string[@name="KC_OS_CLIENT_ID"]').text,
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients?clientId="+clientId,
                        headers=headers,
                        verify=False)
-    global client_id
     client_id = res.json()[0].get("id")
-    return
+    return client_id 
