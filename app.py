@@ -3,7 +3,7 @@ from flask_restx import Api, Resource, reqparse, fields
 app = Flask(__name__)
 api = Api(app, version='1.0', title='인증 API', description='Swagger', doc="/api-docs")
 auth_api = api.namespace('', description='SignUp API')
-from controllers import signup
+from controllers import signup, ks_project
 
 class _Schema():
     post_fields = auth_api.model("회원 가입 시 필요한 데이터", {
@@ -24,12 +24,25 @@ class signUp(Resource):
         user_gname = req['given_name']
         user_mail = req['email']
         user_passwd = req['password']
-        
+
         res = signup.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd)
         if res == True:
             return "{ Success: true }"
         else:
             return "{ Success: False }"
 
+@auth_api.route('/projectId')
+class addProjectId(Resource):
+    def post(self):
+        req = request.args
+        project_name = req.get('name')
+
+        res = ks_project.post_project_id(project_name)
+
+        if int(str(res)[11:14]) <= 204:
+            return "{ Success: true }"
+        else:
+            return "{ Success: False }"
+
 if __name__ == '__main__':
-    app.run(port='3000')
+    app.run(host='0.0.0.0', port='3000')
