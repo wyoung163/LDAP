@@ -14,11 +14,11 @@ gf_role = ""
 def get_group(user_name):
     headers = {
        "Content-Type": "application/json",
-        "Authorization": "Bearer " + kc_client.access_token 
+        "Authorization": "Bearer " + kc_client.access_token
     }
     roles = ['admin', 'editor', 'viewer']
     for role in roles:
-        res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role,
+        res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role+"&exact=true",
                        headers=headers,
                        verify=False)
         global gf_role
@@ -26,17 +26,15 @@ def get_group(user_name):
         global group_name, group_id
         group_id = res.json()[0].get("id")
         group_name = res.json()[0].get("name")
-        post_project_name(user_name=user_name)
-        kc_user.get_user_id(user_name=user_name)
-        put_join_group(user_name=user_name) 
         os_group.post_group_role_mapping() #openstack role mapping
         gf_group.post_group_role_mapping() #grafana role mapping
 
 # group attribute에 project name 추가
 def post_project_name(user_name):
+    get_group(user_name)
     headers = {
        "Content-Type": "application/json",
-        "Authorization": "Bearer " + kc_client.access_token 
+        "Authorization": "Bearer " + kc_client.access_token
     }
     data = {
         "name": group_name,
@@ -46,7 +44,7 @@ def post_project_name(user_name):
             ]
         }
     }
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id, 
+    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id,
                        headers=headers,
                        json=data,
                        verify=False)
