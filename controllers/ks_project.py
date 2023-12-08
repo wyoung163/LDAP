@@ -16,21 +16,28 @@ def get_groups(user_name, role):
         "Authorization": "Bearer " + kc_client.access_token
     }
 
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role,
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role+"&exact=true",
                        headers=headers,
                        verify=False)
-    print(res)
     global group_name, group_id
     group_id = res.json()[0].get("id")
     group_name = res.json()[0].get("name")
 
+def post_project(project_name):
+    domain_id = os.popen(". /app/openrc && echo ${OS_KC_DOMAIN_ID}").read()
+    #domain_id = os.popen(". /opt/stack/federation/LDAP/openrc && echo ${OS_KC_DOMAIN_ID}").read()
+    res = os.popen(". /app/openrc && openstack project create " + project_name + " --domain "+domain_id).read()
+    #res = os.popen(". /opt/stack/federation/LDAP/openrc && openstack project create " + project_name + " --domain "+domain_id).read()
+
 def get_project_id(project_name):
-    res = os.popen(". /home/ubuntu/keystonerc && openstack project show " + project_name + " --format json --column id").read()
+    res = os.popen(". /app/openrc && openstack project show " + project_name + " --format json --column id").read()
+    #res = os.popen(". /opt/stack/federation/LDAP/openrc && openstack project show " + project_name + " --format json --column id").read()
     project_id = json.loads(res).get("id")
     return project_id
 
 def post_project_id(project_name):
     kc_client.post_admin_access_token()
+    post_project(project_name)
     project_id = get_project_id(project_name)
     roles = ['admin', 'editor', 'viewer']
 
@@ -56,3 +63,7 @@ def post_project_id(project_name):
                        json=data,
                        verify=False)
     return res
+
+def delete_project(project_name):
+    res = os.popen(". /app/openrc && openstack project delete " + project_name).read()
+    #res = os.popen(". /opt/stack/federation/LDAP/openrc && openstack project delete " + project_name).read()
