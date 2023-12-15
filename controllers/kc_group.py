@@ -26,9 +26,9 @@ def get_group(user_name):
         global group_name, group_id
         group_id = res.json()[0].get("id")
         group_name = res.json()[0].get("name")
-        post_project_name(user_name=user_name)
+        #post_project_name(user_name=user_name)
         kc_user.get_user_id(user_name=user_name)
-        put_join_group(user_name=user_name) 
+        #put_join_group(user_name=user_name) 
         os_group.post_group_role_mapping() #openstack role mapping
         gf_group.post_group_role_mapping() #grafana role mapping
 
