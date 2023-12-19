@@ -27,9 +27,13 @@ class signUp(Resource):
 
         res = ldap.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd)
         if res == True:
-            return "{ Success: true }"
+            return '{ "Success": true }'
+        elif res == "user":
+            return '{ "Error": { "code": 409, "title": "Duplicated user" } }'
+        elif res == "mail":
+            return '{ "Error": { "code": 409, "title": "Duplicated email" } }'
         else:
-            return "{ Success: False }"
+            return '{ "Success": false }'
         
     def delete(self):
         req = request.args
@@ -37,11 +41,11 @@ class signUp(Resource):
 
         res = ldap.delete_user(user_name)
         if res == True:
-            return "{ Success: true }"
+            return '{ "Success": true }'
         elif res == "user":
-            return "{ Success: false, 'User not found' }"
+            return '{ "Error" : { "code": 404.  "title": "User not found" } }'
         else:
-            return "{ Success: false }"
+            return '{ "Success": false }'
         
 @auth_api.route('/group')
 @auth_api.expect(_Schema.post_fields)
@@ -53,13 +57,14 @@ class group(Resource):
 
         res = ldap.add_group_member(group_name = group_name, user_name=user_name)
         if res == True:
-            return "{ Success: true }"
+            return '{ "Success": true }'
         elif res == "user":
-            return "{ Success: false, 'User not found.' }"
+            return '{ "Error" : { "code": 404,  "title": "User not found" } }'
         elif res == "group":
-            return "{ Success: false, 'Group not found.' }"
+            return '{ "Error" : { "code": 404,  "title": "Group not found" } }'
         else:
-            return "{ Success: false }"
+            return '{ "Success": false }'
+
         
     def delete(self):
         req = request.args
@@ -68,13 +73,13 @@ class group(Resource):
 
         res = ldap.delete_group_member(group_name = group_name, user_name=user_name)
         if res == True:
-            return "{ Success: true }"
+            return '{ "Success": true }'
         elif res == "user":
-            return "{ Success: false, 'User not found.' }"
+            return '{ "Error" : { "code": 404,  "title": "User not found" } }'
         elif res == "group":
-            return "{ Success: false, 'Group not found.' }"
+            return '{ "Error" : { "code": 404,  "title": "Group not found" } }'
         else:
-            return "{ Success: false }"
+            return '{ "Success": false }'        
 
 @auth_api.route('/projectId')
 class addProjectId(Resource):
