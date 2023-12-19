@@ -37,6 +37,7 @@ def add_group(user_name):
                                     attributes=ldap_attr)
         time.sleep(0.6)
         kc_client.post_admin_access_token()
+        kc_group.get_group(user_name)
         kc_group.post_project_name(user_name)
         ks_project.post_project_id(user_name)
 
