@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, Response, json
 from flask_restx import Api, Resource, reqparse, fields
 app = Flask(__name__)
 api = Api(app, version='1.0', title='인증 API', description='Swagger', doc="/api-docs")
@@ -20,32 +20,45 @@ class signUp(Resource):
     def post(self):
         req = request.json
         user_name = req['username']
-        user_sn = req['last_name']
-        user_gname = req['given_name']
+        #user_sn = req['last_name']
+        #user_gname = req['given_name']
+        user_sn = req['username']
+        user_gname = req['username']
         user_mail = req['email']
         user_passwd = req['password']
 
         res = ldap.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd)
         if res == True:
-            return '{ "Success": true }'
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            return '{ "Error": { "code": 409, "title": "Duplicated user" } }'
+            body = '{ "Error": { "code": 409, "title": "Duplicated user" } }'
+            return Response(response=json.dumps(body), status=409, mimetype="application/json")
         elif res == "mail":
-            return '{ "Error": { "code": 409, "title": "Duplicated email" } }'
+            body = '{ "Error": { "code": 409, "title": "Duplicated email" } }'
+            return Response(response=json.dumps(body), status=409, mimetype="application/json")
+        elif res == 409:
+            body = '{ "Error": { "code": 409, "title": "Duplicated project" } }'
+            return Response(response=json.dumps(body), status=409, mimetype="application/json")
         else:
-            return '{ "Success": false }'
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
         
     def delete(self):
         req = request.args
         user_name =  req.get('user')
 
+        ks_project.delete_project(user_name)
         res = ldap.delete_user(user_name)
         if res == True:
-            return '{ "Success": true }'
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            return '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
-            return '{ "Success": false }'
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
         
 @auth_api.route('/group')
 @auth_api.expect(_Schema.post_fields)
@@ -57,14 +70,17 @@ class group(Resource):
 
         res = ldap.add_group_member(group_name = group_name, user_name=user_name)
         if res == True:
-            return '{ "Success": true }'
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            return '{ "Error" : { "code": 404,  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
         elif res == "group":
-            return '{ "Error" : { "code": 404,  "title": "Group not found" } }'
+            body = '{ "Error" : { "code": 404.  "title": "Group not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
-            return '{ "Success": false }'
-
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
         
     def delete(self):
         req = request.args
@@ -73,14 +89,17 @@ class group(Resource):
 
         res = ldap.delete_group_member(group_name = group_name, user_name=user_name)
         if res == True:
-            ks_project.delete_project(user_name)
-            return '{ "Success": true }'
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            return '{ "Error" : { "code": 404,  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
         elif res == "group":
-            return '{ "Error" : { "code": 404,  "title": "Group not found" } }'
+            body = '{ "Error" : { "code": 404.  "title": "Group not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
-            return '{ "Success": false }'        
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
 
 @auth_api.route('/projectId')
 class addProjectId(Resource):
