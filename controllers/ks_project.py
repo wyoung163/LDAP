@@ -3,21 +3,7 @@
 import json, os, requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
-from controllers import kc_client, kc_group
-
-# keystone-auth-cli
-from keystoneauth1.identity import v3
-from keystoneauth1 import session
-from keystoneclient.v3 import client
-import config
-# Keystone server 연결
-auth = v3.Password(auth_url=config.KS_URL,
-        username=config.KS_ADMIN_USERNAME,
-        password=config.KS_ADMIN_PASSWORD,
-        system_scope="all",
-        user_domain_id=config.KS_USER_DOMAIN_ID)
-sess = session.Session(auth=auth)
-keystone = client.Client(session=sess)
+from controllers import kc_client, kc_group, ks_auth, config
 
 url = tree.find('string[@name="KC_URL"]').text
 acess_token = ""
@@ -39,10 +25,14 @@ def get_groups(user_name, role):
 
 def post_project(project_name):
     ## python-keystoneclient 활용
-    proj = keystone.projects.create(name=project_name, domain=config.KS_DOMAIN, enabled=True)
-    global project_id
-    project_id = str(proj).split(",")[3].split("=")[1]
-    return project_id
+    try:
+        proj = ks_auth.keystone.projects.create(name=project_name, domain=config.KS_DOMAIN, enabled=True)
+        global project_id
+        project_id = str(proj).split(",")[3].split("=")[1]
+        return project_id
+    except:
+        return 409
+
     ## openstackclient 활용
     #domain_id = os.popen(". /app/openrc && echo ${OS_KC_DOMAIN_ID}").read()
     #res = os.popen(". /app/openrc && openstack project create " + project_name + " --domain "+domain_id).read()
@@ -55,7 +45,9 @@ def post_project(project_name):
 
 def post_project_id(project_name):
     kc_client.post_admin_access_token()
-    post_project(project_name)
+    project = post_project(project_name)
+    if project == 409:
+        return 409
 
     ## openstackclient 활용
     #project_id = get_project_id(project_name)
@@ -86,13 +78,13 @@ def post_project_id(project_name):
 
 def delete_project(project_name):
     project_id = kc_group.get_project_id(project_name)
-    keystone.projects.delete(project=project_id)
+    ks_auth.keystone.projects.delete(project=project_id)
     ## openstackclient 활용
     #res = os.popen(". /app/openrc && openstack project delete " + project_name).read()
 
 def delete_project(project_name):
     project_id = kc_group.get_project_id(project_name)
-    keystone.projects.delete(project=project_id)
+    ks_auth.keystone.projects.delete(project=project_id)
     ## openstackclient 활용
     #res = os.popen(". /app/openrc && openstack project delete " + project_name).read()
 
