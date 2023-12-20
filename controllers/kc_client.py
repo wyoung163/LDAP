@@ -1,8 +1,7 @@
 import requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
-from controllers import kc_user
-from controllers import gf_group
+from controllers import kc_user, gf_group
 
 url = tree.find('string[@name="KC_URL"]').text
 access_token = ""
