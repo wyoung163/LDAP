@@ -73,6 +73,7 @@ class group(Resource):
 
         res = ldap.delete_group_member(group_name = group_name, user_name=user_name)
         if res == True:
+            ks_project.delete_project(user_name)
             return '{ "Success": true }'
         elif res == "user":
             return '{ "Error" : { "code": 404,  "title": "User not found" } }'
