@@ -1,7 +1,7 @@
 import requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
-from controllers import kc_user, kc_client, gf_group, os_group
+from controllers import kc_user, kc_client, gf_group, os_group, config
 
 url = tree.find('string[@name="KC_URL"]').text
 role_id = ""
