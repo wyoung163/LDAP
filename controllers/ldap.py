@@ -37,7 +37,13 @@ def add_group(user_name):
                                     attributes=ldap_attr)
         time.sleep(0.6)
         kc_client.post_admin_access_token()
-        kc_group.get_group(user_name)
+        # 종종 sync가 늦어서 아직 그룹이 등록되지 않았을 때 오류가 발생하는 지점 > 예외 처리 
+        isSuccess = kc_group.get_group(user_name)
+        if isSuccess == False:
+            # 사용자가 회원가입을 동일하게 재진행할 수 있도록 LDAP의 group, user 삭제
+            delete_group(user_name)
+            delete_user(user_name)
+            return False
         kc_group.post_project_name(user_name)
         ks_project.post_project_id(user_name)
 
@@ -71,7 +77,13 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
         time.sleep(0.6)
         add_group(user_name)
 
-        kc_user.put_email_verified(user_name=user_name)
+        # 종종 sync가 늦어서 아직 그룹이 등록되지 않았을 때 오류가 발생하는 지점 > 예외 처리
+        isSuccess = kc_user.put_email_verified(user_name=user_name)
+        if isSuccess == False:
+            # 사용자가 회원가입을 동일하게 재진행할 수 있도록 LDAP의 group, user 삭제
+            delete_group(user_name)
+            delete_user(user_name)
+            return False
 
     except LDAPException as e:
         response = e
@@ -181,7 +193,7 @@ def delete_user(user_name):
         return "user"
 
     delete_group(user_name)
-    ks_project.delete_project(user_name)
+    #ks_project.delete_project(user_name)
     ks_user.delete_user(user_name)
 
     try:
