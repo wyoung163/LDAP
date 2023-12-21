@@ -3,7 +3,8 @@
 import json, os, requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
-from controllers import kc_client, kc_group, ks_auth, config
+from controllers import kc_client, kc_group, ks_auth
+import config
 
 url = tree.find('string[@name="KC_URL"]').text
 acess_token = ""

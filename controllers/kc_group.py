@@ -1,7 +1,8 @@
 import requests
 import xml.etree.ElementTree as elemTree
 tree = elemTree.parse('keys.xml')
-from controllers import kc_user, kc_client, gf_group, os_group, config
+from controllers import kc_user, kc_client, gf_group, os_group
+import config
 
 url = tree.find('string[@name="KC_URL"]').text
 role_id = ""
@@ -34,7 +35,8 @@ def get_group(user_name):
         kc_user.get_user_id(user_name=user_name)
         os_group.post_group_role_mapping() #openstack role mapping
         gf_group.post_group_role_mapping() #grafana role mapping
-        return True
+    
+    return True
 
 # group attribute에 project name 추가
 def post_project_name(user_name):
