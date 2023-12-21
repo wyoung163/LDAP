@@ -20,7 +20,9 @@ def get_user_id(user_name):
 
 # 사용자 이메일 허용 여부 true로 수정
 def put_email_verified(user_name):
-    get_user_id(user_name)
+    isSuccess = get_user_id(user_name)
+    if isSuccess == False:
+        return False
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
@@ -28,10 +30,75 @@ def put_email_verified(user_name):
     data = {
         "emailVerified": True,
     }
+    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+user_id,
+                       headers=headers,
+                       json=data,
+                       verify=False)
+    return True
+
+
+# 사용자의 기존 user attribute 조회
+def get_user_attributes(user_name):
+    isSuccess = get_user_id(user_name)
+    if isSuccess == False:
+        return False
+    headers = {
+       "Content-Type": "application/json",
+        "Authorization": "Bearer " + kc_client.access_token
+    }
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+user_id, 
+                       headers=headers,
+                       verify=False)
+    print(res.json().get("attributes"))
+    attributes = res.json().get("attributes")
+    return attributes
+    
+# 사용자의 attribute로 system_role:true|false 지정
+def post_user_attributes(user_name, isUser):
+    #attributes = get_user_attributes(user_name)
+    #if attributes == False: 
+    #    return False
+    
+    headers = {
+       "Content-Type": "application/json",
+        "Authorization": "Bearer " + kc_client.access_token
+    }
+
+    data = ""
+    # dn = attributes["LDAP_ENTRY_DN"]
+    # id = attributes["LDAP_ID"]
+    # create_time = attributes["createTimestamp"]
+    # modify_time = attributes["modifyTimestamp"]
+
+    if isUser:
+        data = {
+            "attributes": {
+                "system_admin": [
+                    "false"
+                ]
+            }
+        }
+    else: 
+        data = {
+            "attributes": {
+                "system_admin": [
+                   "true"
+                ]
+            }
+        }
+
+    # data["attributes"]["LDAP_ENTRY_DN"] = dn
+    # data["attributes"]["LDAP_ID"] = id
+    # data["attributes"]["create_time"] = create_time
+    # data["attributes"]["modify_time"] = modify_time
+        
     res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+user_id, 
                        headers=headers,
                        json=data,
                        verify=False)
+    if res.status_code >= 400:
+        return False
+    return True
 
 # 사용자 password 수정 <불필요>
 # def put_user_password(user_passwd):
