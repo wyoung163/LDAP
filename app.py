@@ -27,7 +27,7 @@ class signUp(Resource):
         user_mail = req['email']
         user_passwd = req['password']
 
-        res = ldap.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd)
+        res = ldap.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd, isUser=True)
         if res == True:
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
@@ -56,6 +56,34 @@ class signUp(Resource):
         elif res == "user":
             body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
+        else:
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
+        
+@auth_api.route('/admin/auth')
+@auth_api.expect(_Schema.post_fields)
+class adminSignUp(Resource):
+    def post(self):
+        req = request.form
+        user_name = req['username']
+        user_sn = req['username']
+        user_gname = req['username']
+        user_mail = req['email']
+        user_passwd = req['password']
+
+        res = ldap.add_user(user_name=user_name, user_sn=user_sn, user_gname=user_gname, user_mail=user_mail, user_passwd=user_passwd, isUser=False)
+        if res == True:
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
+        elif res == "user":
+            body = '{ "Error": { "code": 409, "title": "Duplicated user" } }'
+            return Response(response=json.dumps(body), status=409, mimetype="application/json")
+        elif res == "mail":
+            body = '{ "Error": { "code": 409, "title": "Duplicated email" } }'
+            return Response(response=json.dumps(body), status=409, mimetype="application/json")
+        elif res == 409:
+            body = '{ "Error": { "code": 409, "title": "Duplicated project" } }'
+            return Response(response=json.dumps(body), status=409, mimetype="application/json")
         else:
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")

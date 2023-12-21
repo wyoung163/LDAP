@@ -53,7 +53,7 @@ def add_group(user_name):
     ldap_conn.unbind()
     return response
 
-def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
+def add_user(user_name, user_sn, user_gname, user_mail, user_passwd, isUser):
     ldap_attr = {}
     ldap_attr['cn'] = user_name
     ldap_attr['sn'] = user_sn
@@ -86,6 +86,12 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
             delete_group(user_name)
             delete_user(user_name)
             return False
+        
+        isSuccess = kc_user.post_user_attributes(user_name=user_name, isUser=isUser)
+        if isSuccess == False:
+            delete_group(user_name)
+            delete_user(user_name)
+            return False           
 
     except LDAPException as e:
         response = e
