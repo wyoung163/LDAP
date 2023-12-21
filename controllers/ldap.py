@@ -75,7 +75,9 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
             return "user"
 
         time.sleep(0.6)
-        add_group(user_name)
+        isSuccess = add_group(user_name)
+        if isSuccess == 409:
+            return 409
 
         # 종종 sync가 늦어서 아직 그룹이 등록되지 않았을 때 오류가 발생하는 지점 > 예외 처리
         isSuccess = kc_user.put_email_verified(user_name=user_name)
