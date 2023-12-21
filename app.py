@@ -18,7 +18,7 @@ class _Schema():
 @auth_api.expect(_Schema.post_fields)
 class signUp(Resource):
     def post(self):
-        req = request.json
+        req = request.form
         user_name = req['username']
         #user_sn = req['last_name']
         #user_gname = req['given_name']
