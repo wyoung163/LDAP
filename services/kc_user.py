@@ -1,29 +1,26 @@
 import requests
-import config
+import xml.etree.ElementTree as elemTree
+tree = elemTree.parse('keys.xml')
 from controllers import kc_client
 
-url = config.KC_URL
-id = ""
+url = tree.find('string[@name="KC_URL"]').text
+user_id = ""
 
 # 사용자 id 조회
-def get_user_id(user_id):
+def get_user_id(user_name):
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
     }
-    try:
-        res = requests.get(url+"admin/realms/"+config.KC_REALM+"/users?username="+user_id+"&exact=true", 
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users?username="+user_name+"&exact=true", 
                        headers=headers,
                        verify=False)
-        global id
-        id = res.json()[0].get("id")
-        return True
-    except:
-        return False
+    global user_id
+    user_id = res.json()[0].get("id")
 
 # 사용자 이메일 허용 여부 true로 수정
-def put_email_verified(user_id):
-    isSuccess = get_user_id(user_id)
+def put_email_verified(user_name):
+    isSuccess = get_user_id(user_name)
     if isSuccess == False:
         return False
     headers = {
@@ -33,7 +30,7 @@ def put_email_verified(user_id):
     data = {
         "emailVerified": True,
     }
-    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/users/"+id,
+    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+user_id,
                        headers=headers,
                        json=data,
                        verify=False)
@@ -41,15 +38,15 @@ def put_email_verified(user_id):
 
 
 # 사용자의 기존 user attribute 조회
-def get_user_attributes(user_id):
-    isSuccess = get_user_id(user_id)
+def get_user_attributes(user_name):
+    isSuccess = get_user_id(user_name)
     if isSuccess == False:
         return False
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
     }
-    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/users/"+id, 
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+user_id, 
                        headers=headers,
                        verify=False)
     print(res.json().get("attributes"))
@@ -57,8 +54,7 @@ def get_user_attributes(user_id):
     return attributes
     
 # 사용자의 attribute로 system_role:true|false 지정
-def post_user_attributes(user_id, isUser):
-    isSuccess = get_user_id(user_id)
+def post_user_attributes(user_name, isUser):
     #attributes = get_user_attributes(user_name)
     #if attributes == False: 
     #    return False
@@ -96,7 +92,7 @@ def post_user_attributes(user_id, isUser):
     # data["attributes"]["create_time"] = create_time
     # data["attributes"]["modify_time"] = modify_time
         
-    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/users/"+id, 
+    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+user_id, 
                        headers=headers,
                        json=data,
                        verify=False)

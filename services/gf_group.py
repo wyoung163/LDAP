@@ -1,8 +1,9 @@
 import requests
-import config
+import xml.etree.ElementTree as elemTree
+tree = elemTree.parse('keys.xml')
 from controllers import kc_client, kc_group
 
-url = config.KC_URL 
+url = tree.find('string[@name="KC_URL"]').text
 client_id = ""
 role_id = ""
 role_name = ""
@@ -10,7 +11,7 @@ role_name = ""
 # grafana client role(projectAdmin, projectEditor, projectViewer) 조회
 def get_client_role():
     global client_id
-    client_id = kc_client.get_client_id(config.KC_GF_CLIENT_ID)
+    client_id = kc_client.get_client_id(tree.find('string[@name="KC_GF_CLIENT_ID"]').text)
     role = kc_group.gf_role
     headers = {
         "Content-Type": "application/json",
@@ -23,7 +24,7 @@ def get_client_role():
     else: 
         gf_role = "projectViewer"
 
-    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/clients/"+client_id+"/roles?search="+gf_role,
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients/"+client_id+"/roles?search="+gf_role,
                     headers=headers, 
                     verify=False)
     global role_name, role_id
@@ -41,7 +42,7 @@ def post_group_role_mapping():
         "id": role_id,
         "name": role_name
     }]
-    res = requests.post(url+"admin/realms/"+config.KC_REALM+"/groups/"+kc_group.group_id+"/role-mappings/clients/"+client_id,
+    res = requests.post(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+kc_group.group_id+"/role-mappings/clients/"+client_id,
                         headers=headers,
                         json=data,
                         verify=False)
