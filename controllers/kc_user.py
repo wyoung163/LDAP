@@ -1,9 +1,8 @@
 import requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
+import config
 from controllers import kc_client
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL
 id = ""
 
 # 사용자 id 조회
@@ -13,7 +12,7 @@ def get_user_id(user_id):
         "Authorization": "Bearer " + kc_client.access_token
     }
     try:
-        res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users?username="+user_id+"&exact=true", 
+        res = requests.get(url+"admin/realms/"+config.KC_REALM+"/users?username="+user_id+"&exact=true", 
                        headers=headers,
                        verify=False)
         global id
@@ -34,7 +33,7 @@ def put_email_verified(user_id):
     data = {
         "emailVerified": True,
     }
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+id,
+    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/users/"+id,
                        headers=headers,
                        json=data,
                        verify=False)
@@ -50,7 +49,7 @@ def get_user_attributes(user_id):
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
     }
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+id, 
+    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/users/"+id, 
                        headers=headers,
                        verify=False)
     print(res.json().get("attributes"))
@@ -97,7 +96,7 @@ def post_user_attributes(user_id, isUser):
     # data["attributes"]["create_time"] = create_time
     # data["attributes"]["modify_time"] = modify_time
         
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+id, 
+    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/users/"+id, 
                        headers=headers,
                        json=data,
                        verify=False)

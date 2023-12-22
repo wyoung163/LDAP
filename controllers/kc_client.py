@@ -1,18 +1,17 @@
 import requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
+import config
 from controllers import kc_user, gf_group
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL #tree.find('string[@name="KC_URL"]').text
 access_token = ""
 
 # admin-cli access-token 조회
 params = {
     "grant_type": "password",
-    "client_secret": tree.find('string[@name="KC_ADMIN_CLIENT_SECRET"]').text,
-    "client_id": tree.find('string[@name="KC_ADMIN_CLIENT_ID"]').text,
-    "username": tree.find('string[@name="KC_ADMIN_USERNAME"]').text,
-    "password": tree.find('string[@name="KC_ADMIN_PASSWD"]').text,
+    "client_secret": config.KC_ADMIN_CLIENT_SECRET,
+    "client_id": config.KC_ADMIN_CLIENT_ID,
+    "username": config.KC_ADMIN_USERNAME,
+    "password": config.KC_ADMIN_PASSWD,
     "scope": "openid"
 }
 def post_admin_access_token():
@@ -29,7 +28,7 @@ def get_client_id(clientId):
        "Content-Type": "application/json",
         "Authorization": "Bearer " + access_token 
     }
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/clients?clientId="+clientId,
+    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/clients?clientId="+clientId,
                        headers=headers,
                        verify=False)
     client_id = res.json()[0].get("id")

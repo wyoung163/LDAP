@@ -1,12 +1,10 @@
 #!/usr/bin/python
 
 import json, os, requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
 from controllers import kc_client, kc_group, ks_auth
 import config
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL
 acess_token = ""
 group_id = ""
 group_name = ""
@@ -17,7 +15,7 @@ def get_groups(user_id, role):
         "Authorization": "Bearer " + kc_client.access_token
     }
 
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_id+"@"+role+"&exact=true",
+    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/groups?search="+user_id+"@"+role+"&exact=true",
                        headers=headers,
                        verify=False)
     global group_name, group_id
@@ -71,7 +69,7 @@ def post_project_id(project_name):
                 ],
             }
         }
-        res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id,
+        res = requests.put(url+"admin/realms/"+config.KC_REALM+"/groups/"+group_id,
                        headers=headers,
                        json=data,
                        verify=False)

@@ -1,17 +1,16 @@
 from ldap3 import Server, Connection, ALL, MODIFY_ADD, MODIFY_DELETE
 from ldap3.core.exceptions import LDAPException, LDAPBindError
-from controllers import kc_user, kc_group, kc_client, ks_project, os_group, gf_group, ks_user
-import xml.etree.ElementTree as elemTree
+from controllers import kc_user, kc_group, kc_client, ks_project, ks_user
 import time
-tree = elemTree.parse('keys.xml')
+import config
 
 def connect_ldap_server():
     try:
-        server_uri = tree.find('string[@name="LDAP_URL"]').text
+        server_uri = config.LDAP_URL
         server = Server(server_uri, get_info=ALL)
         connection = Connection(server,
-                        user=tree.find('string[@name="LDAP_ADMIN_DN"]').text,
-                        password=tree.find('string[@name="LDAP_PASSWD"]').text)
+                        user=config.LDAP_ADMIN_DN,
+                        password=config.LDAP_PASSWD)
         bind_response = connection.bind()
     except LDAPBindError as e:
         connection = e
@@ -20,7 +19,7 @@ def connect_ldap_server():
 def add_group(user_id):
     ldap_attr = {}
     ldap_attr['objectClass'] = ['top', 'posixGroup']
-    new_gid = tree.find('string[@name="LDAP_NEW_GID"]').text
+    new_gid = config.LDAP_NEW_GID
 
     ldap_conn = connect_ldap_server()
 

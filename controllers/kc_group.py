@@ -1,10 +1,8 @@
 import requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
 from controllers import kc_user, kc_client, gf_group, os_group, kc_group
 import config
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL
 role_id = ""
 role_name = ""
 group_id = ""
@@ -19,7 +17,7 @@ def get_group(user_id):
     }
     roles = ['admin', 'editor', 'viewer']
     for role in roles:
-        res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_id+"@"+role,
+        res = requests.get(url+"admin/realms/"+config.KC_REALM+"/groups?search="+user_id+"@"+role,
                        headers=headers,
                        verify=False)
         global gf_role
@@ -53,7 +51,7 @@ def post_project_name(user_id):
             ]
         }
     }
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id, 
+    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/groups/"+group_id, 
                        headers=headers,
                        json=data,
                        verify=False)
@@ -65,7 +63,7 @@ def put_join_group(user_id):
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token 
     }
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+kc_user.user_id+"/groups/"+group_id, 
+    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/users/"+kc_user.user_id+"/groups/"+group_id, 
                        headers=headers,
                        verify=False)
     

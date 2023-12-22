@@ -1,11 +1,10 @@
 #!/usr/bin/python
 
 import json, os, requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
-from controllers import kc_client, ks_auth
+import config
+from controllers import ks_auth
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL
 acess_token = ""
 id = ""
 
