@@ -32,7 +32,7 @@ def get_group(user_name):
         
         group_id = res.json()[0].get("id")
         group_name = res.json()[0].get("name")
-        kc_user.get_user_id(user_name=user_name)
+        kc_user.get_user_id(user_id=user_name)
         os_group.post_group_role_mapping() #openstack role mapping
         gf_group.post_group_role_mapping() #grafana role mapping
     

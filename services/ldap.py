@@ -80,7 +80,7 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd, isUser):
             return 409
 
         # 종종 sync가 늦어서 아직 그룹이 등록되지 않았을 때 오류가 발생하는 지점 > 예외 처리
-        isSuccess = kc_user.put_email_verified(user_name=user_name)
+        isSuccess = kc_user.put_email_verified(user_id=user_name)
         if isSuccess == False:
             # 사용자가 회원가입을 동일하게 재진행할 수 있도록 LDAP의 group, user 삭제
             delete_group(user_name)

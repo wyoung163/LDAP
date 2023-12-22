@@ -11,13 +11,13 @@ acess_token = ""
 group_id = ""
 group_name = ""
 
-def get_groups(user_name, role):
+def get_groups(user_id, role):
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
     }
 
-    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role+"&exact=true",
+    res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_id+"@"+role+"&exact=true",
                        headers=headers,
                        verify=False)
     global group_name, group_id
@@ -46,8 +46,8 @@ def post_project(project_name):
 
 def post_project_id(project_name):
     kc_client.post_admin_access_token()
-    project = post_project(project_name)
-    if project == 409:
+    project_id = post_project(project_name)
+    if project_id == 409:
         return 409
 
     ## openstackclient 활용
@@ -89,10 +89,10 @@ def delete_project(project_name):
     ## openstackclient 활용
     #res = os.popen(". /app/openrc && openstack project delete " + project_name).read()
 
-def put_user_to_project(project_name, user_name):
+def put_user_to_project(project_name, user_id):
     ## openstackclient 활용
-    res = os.popen(". /app/openrc && openstack role add --project " + project_name + " --user " + user_name + " member").read()
+    res = os.popen(". /app/openrc && openstack role add --project " + project_name + " --user " + user_id + " member").read()
 
-def delete_user_from_project(project_name, user_name):
+def delete_user_from_project(project_name, user_id):
     ## openstackclient 활용
-    res = os.popen(". /app/openrc && openstack role remove --project " + project_name + " --user " + user_name + " member").read()
+    res = os.popen(". /app/openrc && openstack role remove --project " + project_name + " --user " + user_id + " member").read()

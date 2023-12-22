@@ -37,7 +37,7 @@ def add_group(user_name):
                                     attributes=ldap_attr)
         time.sleep(1)
         kc_client.post_admin_access_token()
-        kc_group.get_group(user_name=user_name)
+        kc_group.get_group(user_id=user_name)
 
 
     except LDAPException as e:
@@ -67,7 +67,7 @@ def add_user(user_name, user_sn, user_gname, user_mail, user_passwd):
         
         #kc_user.get_user_id(user_name=user_name)
         #kc_user.put_user_password(user_passwd=user_passwd)
-        kc_user.put_email_verified(user_name=user_name)
+        kc_user.put_email_verified(user_id=user_name)
 
     except LDAPException as e:
         response = e
