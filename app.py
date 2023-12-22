@@ -1,8 +1,9 @@
 from flask import Flask, request, Response, json, Blueprint
 from flask_restx import Api, Resource, fields
 #from flask_restplus import reqparse
-#from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename
 from controllers import signup, ks_project, ldap
+import os
 
 # file 임시 저장소 (테스트용)
 bp = Blueprint('image', __name__, url_prefix='/company/auth')
@@ -74,13 +75,13 @@ class signUp(Resource):
         company = req['company']
         mail = req['email']
         passwd = req['password']
-        name = req['username']
+        name = req['name']
         phone = req['phone']
-        company_registration_num = req['company_registration_num']
+        registration_num = req['registration_num']
 
         # 사업자 등록증 (파일)
         file = request.files['file']
-        file.save('./' + company)
+        file.save('./company1.' + secure_filename(file.filename))
 
         res = ldap.add_user(id, company, mail, passwd, True)
         if res == True:
