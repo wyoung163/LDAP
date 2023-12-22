@@ -1,10 +1,8 @@
 import requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
-from controllers import kc_user, kc_client, gf_group, os_group
+from controllers import kc_user, kc_client, gf_group, os_group, kc_group
 import config
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL
 role_id = ""
 role_name = ""
 group_id = ""
@@ -12,14 +10,14 @@ group_name = ""
 gf_role = ""
 
 # role group(admin, editor, viewer) 조회
-def get_group(user_name):
+def get_group(user_id):
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token 
     }
     roles = ['admin', 'editor', 'viewer']
     for role in roles:
-        res = requests.get(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups?search="+user_name+"@"+role,
+        res = requests.get(url+"admin/realms/"+config.KC_REALM+"/groups?search="+user_id+"@"+role,
                        headers=headers,
                        verify=False)
         global gf_role
@@ -32,14 +30,15 @@ def get_group(user_name):
         
         group_id = res.json()[0].get("id")
         group_name = res.json()[0].get("name")
-        kc_user.get_user_id(user_id=user_name)
+        kc_user.get_user_id(user_id)
+        kc_group.post_project_name(user_id)
         os_group.post_group_role_mapping() #openstack role mapping
         gf_group.post_group_role_mapping() #grafana role mapping
     
     return True
 
 # group attribute에 project name 추가
-def post_project_name(user_name):
+def post_project_name(user_id):
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token 
@@ -48,33 +47,33 @@ def post_project_name(user_name):
         "name": group_name,
         "attributes": {
             "project_name": [
-                user_name
+                user_id
             ]
         }
     }
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/groups/"+group_id, 
+    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/groups/"+group_id, 
                        headers=headers,
                        json=data,
                        verify=False)
 
 # 사용자 group member로 join
-def put_join_group(user_name):
-    kc_user.get_user_id(user_name)
+def put_join_group(user_id):
+    kc_user.get_user_id(user_id)
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token 
     }
-    res = requests.put(url+"admin/realms/"+tree.find('string[@name="KC_REALM"]').text+"/users/"+kc_user.user_id+"/groups/"+group_id, 
+    res = requests.put(url+"admin/realms/"+config.KC_REALM+"/users/"+kc_user.user_id+"/groups/"+group_id, 
                        headers=headers,
                        verify=False)
     
 # project_id 조회를 위한 특정 KC group id 조회
-def get_group_id(user_name):
+def get_group_id(user_id):
     headers = {
        "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
     }
-    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/groups?search="+user_name+"@admin",
+    res = requests.get(url+"admin/realms/"+config.KC_REALM+"/groups?search="+user_id+"@admin",
                        headers=headers,
                        verify=False)
     global group_name, group_id

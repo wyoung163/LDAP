@@ -1,26 +1,25 @@
 #!/usr/bin/python
 
 import json, os, requests
-import xml.etree.ElementTree as elemTree
-tree = elemTree.parse('keys.xml')
-from controllers import kc_client, ks_auth
+import config
+from controllers import ks_auth
 
-url = tree.find('string[@name="KC_URL"]').text
+url = config.KC_URL
 acess_token = ""
-user_id = ""
+id = ""
 
-def get_user_id(user_name):
+def get_user_id(user_id):
     for i in range(0,len(ks_auth.keystone.users.list())):
-        if str(ks_auth.keystone.users.list()[i]).split(",")[5].split("=")[1] == user_name:
-            global user_id
-            user_id = str(ks_auth.keystone.users.list()[i]).split(",")[3].split("=")[1]
-    return user_id
+        if str(ks_auth.keystone.users.list()[i]).split(",")[5].split("=")[1] == user_id:
+            global id
+            id = str(ks_auth.keystone.users.list()[i]).split(",")[3].split("=")[1]
+    return id
 
-def delete_user(user_name):
+def delete_user(user_id):
     try:
-        user_id = get_user_id(user_name)
+        id = get_user_id(user_id)
         print(user_id)
-        print(ks_auth.keystone.users.delete(user=user_id))
+        print(ks_auth.keystone.users.delete(user=id))
         return True
     except:
         return False
