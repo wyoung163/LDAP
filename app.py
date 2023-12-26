@@ -77,6 +77,7 @@ class signUp(Resource):
         passwd = req['password']
         name = req['name']
         phone = req['phone']
+        address = req['address']
         registration_num = req['registration_num']
 
         # 사업자 등록증 (파일)
