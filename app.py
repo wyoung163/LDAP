@@ -3,10 +3,11 @@ from flask_restx import Api, Resource, fields
 #from flask_restplus import reqparse
 from werkzeug.utils import secure_filename
 from controllers import signup, ks_project, ldap
+from models import swift
 import os
 
 # file 임시 저장소 (테스트용)
-bp = Blueprint('image', __name__, url_prefix='/company/auth')
+#bp = Blueprint('image', __name__, url_prefix='/company/auth')
 
 app = Flask(__name__)
 api = Api(app, version='1.0', title='인증 API', description='Swagger', doc="/api-docs")
@@ -24,6 +25,7 @@ class _Schema():
 @auth_api.route('/auth')
 @auth_api.expect(_Schema.post_fields)
 class signUp(Resource):
+    ## 개인 회원 회원가입
     def post(self):
         req = request.form
         user_id = req['id']
@@ -50,6 +52,7 @@ class signUp(Resource):
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
         
+    # 회원 탈퇴
     def delete(self):
         req = request.args
         name =  req.get('user')
@@ -69,6 +72,7 @@ class signUp(Resource):
 @auth_api.route('/company/auth')
 @auth_api.expect(_Schema.post_fields)
 class signUp(Resource):
+    ## 기업 회원 회원가입
     def post(self):
         req = request.form
         id = req["id"]
@@ -77,11 +81,13 @@ class signUp(Resource):
         passwd = req['password']
         name = req['name']
         phone = req['phone']
+        address = req['address']
         registration_num = req['registration_num']
 
-        # 사업자 등록증 (파일)
+        # 사업자 등록증 (pdf) > swift
         file = request.files['file']
-        file.save('./company1.' + secure_filename(file.filename))
+        file.save('./data/' + company + '.pdf')
+        res = swift.post_object(str(company+'.pdf'))
 
         res = ldap.add_user(id, company, mail, passwd, True)
         if res == True:
