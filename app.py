@@ -3,8 +3,9 @@ from flask_restx import Api, Resource, fields
 #from flask_restplus import reqparse
 from werkzeug.utils import secure_filename
 from controllers import signup, ks_project, ldap
+from models import swift2
 import os
-
+import config
 # file 임시 저장소 (테스트용)
 bp = Blueprint('image', __name__, url_prefix='/company/auth')
 
@@ -180,6 +181,29 @@ class addProjectId(Resource):
             return "{ Success: true }"
         else:
             return "{ Success: False }"
+        
+@auth_api.route('/upload')
+@auth_api.expect(_Schema.post_fields)
+class file(Resource):
+    def post(self):
+        # 사업자 등록증 (파일)
+        # file = request.files['file']
+        # file.save('./company1.' + secure_filename(file.filename))
+
+        res = swift2.get_containers()
+        res = swift2.post_object('company1.'+ secure_filename(file.filename))
+        if res == True:
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
+        elif res == "user":
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
+        elif res == "group":
+            body = '{ "Error" : { "code": 404.  "title": "Group not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
+        else:
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='3000')
