@@ -16,5 +16,5 @@ keystone = client.Client(session=sess)
 
 # Swift Client 연결
 swift = Connection(session=sess, 
-                   preauthurl=config.OS_AUTH_URL, 
+                   preauthurl=config.OS_STORAGE_URL, 
                    preauthtoken=config.OS_AUTH_TOKEN)
