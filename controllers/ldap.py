@@ -16,7 +16,7 @@ def connect_ldap_server():
         connection = e
     return connection
 
-def add_group(user_id):
+def add_group(user_id, passwd):
     ldap_attr = {}
     ldap_attr['objectClass'] = ['top', 'posixGroup']
     new_gid = config.LDAP_NEW_GID
@@ -41,7 +41,7 @@ def add_group(user_id):
         if isSuccess == False:
             # 사용자가 회원가입을 동일하게 재진행할 수 있도록 LDAP의 group, user 삭제
             delete_group(user_id)
-            delete_user(user_id)
+            delete_user(user_id, passwd)
             return False
         kc_group.post_project_name(user_id)
         ks_project.post_project_id(user_id)
@@ -73,7 +73,7 @@ def add_user(user_id, user_name, mail, passwd, isUser):
             return "user"
 
         time.sleep(0.6)
-        isSuccess = add_group(user_id)
+        isSuccess = add_group(user_id, passwd)
         if isSuccess == 409:
             return 409
 
@@ -82,13 +82,13 @@ def add_user(user_id, user_name, mail, passwd, isUser):
         if isSuccess == False:
             # 사용자가 회원가입을 동일하게 재진행할 수 있도록 LDAP의 group, user 삭제
             delete_group(user_id)
-            delete_user(user_id)
+            delete_user(user_id, passwd)
             return False
         
         isSuccess = kc_user.post_user_attributes(user_id, isUser)
         if isSuccess == False:
             delete_group(user_id)
-            delete_user(user_id)
+            delete_user(user_id, passwd)
             return False           
 
     except LDAPException as e:
