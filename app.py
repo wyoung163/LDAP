@@ -73,17 +73,20 @@ class signUp(Resource):
         
     # 회원 탈퇴
     def delete(self):
-        req = request.args
-        name =  req.get('user')
+        req = request.form
+        id =  req['id']
+        password = req['password']
 
-        ks_project.delete_project(name)
-        res = ldap.delete_user(name)
+        res = ldap.delete_user(id, password)
         if res == True:
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
+        elif res == "passwd":
+            body = '{ "Error" : { "code": 401,  "title": "Incorrect password" } }'
+            return Response(response=json.dumps(body), status=401, mimetype="application/json")
         else:
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
@@ -104,9 +107,9 @@ class signUp(Resource):
         registration_num = req['registration_num']
 
         # 사업자 등록증 (pdf) > swift
-        file = request.files['file']
-        file.save('./data/' + company + '.pdf')
-        res = swift.post_object(str(company+'.pdf'))
+        #file = request.files['file']
+        #file.save('./data/' + company + '.pdf')
+        #res = swift.post_object(str(company+'.pdf'))
 
         res = ldap.add_user(id, company, mail, passwd, True)
         if res == True:
