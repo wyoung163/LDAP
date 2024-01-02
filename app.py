@@ -33,7 +33,6 @@ class _Schema():
         'phone': fields.String(description="전화번호", example="02-0000-0000", required=True),
         'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26", required=True),
         'registration_num': fields.String(description="사업자 등록 번호", example="114-54-235642", required=True),
-        'file': fields.String(description="사업자 등록증", example="사업자등록증.pdf", required=True),
     })
 
     patch_group_user_fields = auth_api.model("그룹 사용자 초대, 제거 시 필요한 데이터", {
@@ -41,8 +40,8 @@ class _Schema():
         'user': fields.String(description="초대(제거)된 사용자 아이디", example="cws", required=True)
     })
 
-    delete_user_fields = auth_api.model("회원 가입 시 필요한 데이터", {
-        'user': fields.String(description="아이디", example="cwy", required=True),
+    delete_user_fields = auth_api.model("회원 탈퇴 시 필요한 데이터", {
+        'user': fields.String(description="아이디", example="cwy", required=True)
     })
 
     patch_personal_user_fields = auth_api.model("[개인 회원] 시용자 정보 변경 시 필요한 데이터", {
