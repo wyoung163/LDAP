@@ -12,7 +12,7 @@ import os
 app = Flask(__name__)
 api = Api(app, version='1.0', title='인증 API', description='Swagger', doc="/api-docs")
 auth_api = api.namespace('auth', description='회원가입/탈퇴 API')
-user_api = api.add_namespace('user', description="회원 정보 관련 API")
+user_api = api.namespace('user', description="회원 정보 관련 API")
 group_api = api.namespace('group', description='사용자 초대 API')
 
 class _Schema():
