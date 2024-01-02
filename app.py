@@ -16,36 +16,64 @@ user_api = api.namespace('user', description="회원 정보 관련 API")
 group_api = api.namespace('group', description='사용자 초대 API')
 
 class _Schema():
-    post_fields = auth_api.model("[개인 회원] 회원 가입 시 필요한 데이터", {
-        'id': fields.String(description="아이디", example="cwy"),
-        'username': fields.String(description="사용자 이름", example="최누구"),
+    post_personal_user_fields = auth_api.model("[개인 회원] 회원 가입 시 필요한 데이터", {
+        'id': fields.String(description="아이디", example="cwy", required=True),
+        'username': fields.String(description="사용자 이름", example="최누구", required=True),
+        'email': fields.String(description="이메일", example="cwy@test.com", required=True),
+        'password': fields.String(description="비밀번호", example="1234", required=True),
+        'phone': fields.String(description="전화번호", example="010-0000-0000", required=True),
+        'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26", required=True),
+    })
+
+    post_business_user_fields = auth_api.model("[기업 회원] 회원 가입 시 필요한 데이터", {
+        'id': fields.String(description="아이디", example="company01", required=True),
+        'company': fields.String(description="회사 이름", example="company01", required=True),
+        'email': fields.String(description="이메일", example="test@company.co.kr", required=True),
+        'password': fields.String(description="비밀번호", example="4321", required=True),
+        'phone': fields.String(description="전화번호", example="02-0000-0000", required=True),
+        'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26", required=True),
+        'registration_num': fields.String(description="사업자 등록 번호", example="114-54-235642", required=True),
+        'file': fields.String(description="사업자 등록증", example="사업자등록증.pdf", required=True),
+    })
+
+    patch_group_user_fields = auth_api.model("그룹 사용자 초대, 제거 시 필요한 데이터", {
+        'group': fields.String(description="초대(제거)할 그룹 이름", example="cwy@member", required=True),
+        'user': fields.String(description="초대(제거)된 사용자 아이디", example="cws", required=True)
+    })
+
+    delete_user_fields = auth_api.model("회원 가입 시 필요한 데이터", {
+        'user': fields.String(description="아이디", example="cwy", required=True),
+    })
+
+    patch_personal_user_fields = auth_api.model("[개인 회원] 시용자 정보 변경 시 필요한 데이터", {
+        'id': fields.String(description="아이디", example="cwy", required=True),
+        'username': fields.String(description="사용자 아이디", example="cwy"),
         'email': fields.String(description="이메일", example="cwy@test.com"),
-        'password': fields.String(description="비밀번호", example="1234"),
         'phone': fields.String(description="전화번호", example="010-0000-0000"),
         'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26"),
     })
 
-    post_fields_2 = auth_api.model("[기업 회원] 회원 가입 시 필요한 데이터", {
-        'id': fields.String(description="아이디", example="company01"),
-        'name': fields.String(description="담당자 이름", example="최누구"),
-        'company': fields.String(description="회사 이름", example="company01"),
-        'email': fields.String(description="이메일", example="test@company.co.kr"),
-        'password': fields.String(description="비밀번호", example="4321"),
-        'phone': fields.String(description="전화번호", example="02-0000-0000"),
-        'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26"),
-        'registration_num': fields.String(description="사업자 등록 번호", example="114-54-235642"),
-        'file': fields.String(description="사업자 등록증", example="사업자등록증.pdf"),
+    patch_business_user_fields = auth_api.model("[기업 회원] 시용자 정보 변경 시 필요한 데이터", {
+        'id': fields.String(description="아이디", example="company01", required=True),
+        'company': fields.String(description="회사 이름", example="company01", required=False),
+        'email': fields.String(description="이메일", example="test@company.co.kr", required=False),
+        'phone': fields.String(description="전화번호", example="02-0000-0000", required=False),
+        'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26", required=False),
+        'registration_num': fields.String(description="사업자 등록 번호", example="114-54-235642", required=False),
     })
 
-    delete_fields = auth_api.model("회원 가입 시 필요한 데이터", {
-        'user': fields.String(description="아이디", example="cwy"),
+    patch_password_fields = auth_api.model("비밀번호 변경 시 필요한 데이터", {
+        'password': fields.String(description="비밀번호", example="4321", required=True),
+        'user': fields.String(description="사용자 아이디", example="cwy", required=True)
     })
 
+upload_parser = auth_api.parser()
+upload_parser.add_argument('file', location='files', type='FileStorage', required=True)
 
 @auth_api.route('/')
-@auth_api.expect(_Schema.post_fields)
 class signUp(Resource):
     ## 개인 회원 회원가입
+    @auth_api.expect(_Schema.post_personal_user_fields)
     def post(self):
         req = request.form
         user_id = req['id']
@@ -73,6 +101,7 @@ class signUp(Resource):
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
         
     # 회원 탈퇴
+    @auth_api.expect(_Schema.delete_user_fields)
     def delete(self):
         req = request.form
         id =  req['id']
@@ -93,7 +122,7 @@ class signUp(Resource):
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
 
 @auth_api.route('/business')
-@auth_api.expect(_Schema.post_fields_2)
+@auth_api.expect(upload_parser, _Schema.post_business_user_fields)
 class signUp(Resource):
     ## 기업 회원 회원가입
     def post(self):
@@ -157,8 +186,8 @@ class signUp(Resource):
         
 # 개인 회원 정보 변경
 @user_api.route('/')
-#@user_api.expect(_Schema.post_fields)
-class group(Resource):
+@user_api.expect(_Schema.patch_personal_user_fields)
+class user(Resource):
     def patch(self):
         req = request.form
         id =  req['id']
@@ -180,8 +209,8 @@ class group(Resource):
         
 # 기업 회원 정보 변경
 @user_api.route('/business')
-#@user_api.expect(_Schema.post_fields)
-class group(Resource):
+@user_api.expect(upload_parser, _Schema.patch_business_user_fields)
+class user(Resource):
     def patch(self):
         req = request.form
         id = req['id']
@@ -205,8 +234,8 @@ class group(Resource):
 
 # 비밀번호 변경
 @user_api.route('/password')
-#@user_api.expect(_Schema.post_fields)
-class group(Resource):
+@user_api.expect(_Schema.patch_password_fields)
+class user(Resource):
     def patch(self):
         req = request.form
         user_id = req.get('id')
@@ -224,7 +253,7 @@ class group(Resource):
             return Response(response=json.dumps(body), status=500, mimetype="application/json")      
 
 @group_api.route('/')
-@group_api.expect(_Schema.post_fields)
+@group_api.expect(_Schema.patch_group_user_fields)
 class group(Resource):
     def patch(self):
         req = request.args
@@ -236,10 +265,10 @@ class group(Resource):
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         elif res == "group":
-            body = '{ "Error" : { "code": 404.  "title": "Group not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "Group not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
             body = '{ "Success": false }'
@@ -255,10 +284,10 @@ class group(Resource):
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         elif res == "group":
-            body = '{ "Error" : { "code": 404.  "title": "Group not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "Group not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
             body = '{ "Success": false }'
