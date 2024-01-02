@@ -1,4 +1,4 @@
-from ldap3 import Server, Connection, ALL, MODIFY_ADD, MODIFY_DELETE
+from ldap3 import Server, Connection, ALL, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE
 from ldap3.core.exceptions import LDAPException, LDAPBindError
 from controllers import kc_user, kc_group, kc_client, ks_project, ks_user
 import time
@@ -53,9 +53,17 @@ def add_group(user_id, passwd):
     return response
 
 def add_user(user_id, user_name, mail, passwd, isUser):
+    # if len(user_name) == 3:
+    #     sn = user_name[0]
+    #     given = user_name[1:]
+    # elif len(user_name) == 4:
+    #     sn = user_name[0:2]
+    #     given = user_name[2:]
+    
     ldap_attr = {}
     ldap_attr['cn'] = user_id
     ldap_attr['sn'] = user_name
+    ldap_attr['givenName'] = user_name
     ldap_attr['mail'] = mail
     ldap_attr['userPassword'] = passwd
 
@@ -190,7 +198,7 @@ def delete_group(user_id):
            response = e
     return response
 
-def delete_user(user_id, password):
+def delete_user(user_id):
     ldap_conn = connect_ldap_server()
     user_dn = "cn="+user_id+",ou=users,cn=admin,dc=devstack,dc=co,dc=kr"
     
@@ -200,9 +208,9 @@ def delete_user(user_id, password):
         return "user"
 
     # 비밀번호 검증
-    check = check_password_validation(user_id, password)
-    if check == False:
-        return "passwd"
+    # check = check_password_validation(user_id, password)
+    # if check == False:
+    #     return "passwd"
 
     ks_project.delete_project(user_id)
     delete_group(user_id)
@@ -214,15 +222,54 @@ def delete_user(user_id, password):
         response = e
     return response
 
+# def check_password_validation(user_id, password):
+#     try:
+#         server_uri = config.LDAP_URL
+#         server = Server(server_uri, get_info=ALL)
+#         connection = Connection(server,
+#                         user='cn='+user_id+',ou=users,'+config.LDAP_ADMIN_DN,
+#                         password=password)
+#         bind_response = connection.bind()
+#     except LDAPBindError as e:
+#         bind_response = e
+#     return bind_response
 
-def check_password_validation(user_id, password):
+def modify_user(user_id, name, mail):
+    ldap_conn = connect_ldap_server()
+    user_dn = "cn="+str(user_id)+",ou=users,cn=admin,dc=devstack,dc=co,dc=kr"
+
     try:
-        server_uri = config.LDAP_URL
-        server = Server(server_uri, get_info=ALL)
-        connection = Connection(server,
-                        user='cn='+user_id+',ou=users,'+config.LDAP_ADMIN_DN,
-                        password=password)
-        bind_response = connection.bind()
-    except LDAPBindError as e:
-        bind_response = e
-    return bind_response
+        check = check_user(user_id)
+        if len(check) == 0:
+            return "user"
+
+        if len(name) > 0:
+            # if len(name) == 3:
+            #     sn = name[0]
+            #     given = name[1:]
+            # elif len(name) == 4:
+            #     sn = name[0:2]
+            #     given = name[2:]
+            response = ldap_conn.modify(user_dn, {'sn': [(MODIFY_REPLACE, [name])], 'givenName': [(MODIFY_REPLACE, [name])]})
+
+        if len(mail) > 0:
+            response = ldap_conn.modify(user_dn, {'sn': [(MODIFY_REPLACE, [mail])]})
+
+    except LDAPException as e:
+        response = e
+    return response
+        
+def modify_password(user_id, password):
+    ldap_conn = connect_ldap_server()
+    user_dn = "cn="+str(user_id)+",ou=users,cn=admin,dc=devstack,dc=co,dc=kr"
+
+    try:
+        check = check_user(user_id)
+        if len(check) == 0:
+            return "user"
+
+        response = ldap_conn.modify(user_dn, {'userPassword': [(MODIFY_REPLACE, [password])]})
+    except LDAPException as e:
+        response = e
+    return response
+

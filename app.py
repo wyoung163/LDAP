@@ -12,6 +12,7 @@ import os
 app = Flask(__name__)
 api = Api(app, version='1.0', title='인증 API', description='Swagger', doc="/api-docs")
 auth_api = api.namespace('auth', description='회원가입/탈퇴 API')
+user_api = api.add_namespace('user', description="회원 정보 관련 API")
 group_api = api.namespace('group', description='사용자 초대 API')
 
 class _Schema():
@@ -75,9 +76,9 @@ class signUp(Resource):
     def delete(self):
         req = request.form
         id =  req['id']
-        password = req['password']
+        #password = req['password']
 
-        res = ldap.delete_user(id, password)
+        res = ldap.delete_user(id)
         if res == True:
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
@@ -91,7 +92,7 @@ class signUp(Resource):
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
 
-@auth_api.route('/company')
+@auth_api.route('/business')
 @auth_api.expect(_Schema.post_fields_2)
 class signUp(Resource):
     ## 기업 회원 회원가입
@@ -101,13 +102,13 @@ class signUp(Resource):
         company = req['company']
         mail = req['email']
         passwd = req['password']
-        name = req['name']
+        #manager = req['manager']
         phone = req['phone']
         address = req['address']
         registration_num = req['registration_num']
 
-        # 사업자 등록증 (pdf) > swift
-        #file = request.files['file']
+        # 사업자 등록증 (pdf) 
+        file = request.files['file']
         #file.save('./data/' + company + '.pdf')
         #res = swift.post_object(str(company+'.pdf'))
 
@@ -128,32 +129,100 @@ class signUp(Resource):
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
 
-@auth_api.route('/admin')
-@auth_api.expect(_Schema.post_fields)
-class adminSignUp(Resource):
-    def post(self):
-        req = request.form
-        name = req['username']
-        mail = req['email']
-        passwd = req['password']
+# @auth_api.route('/admin')
+# @auth_api.expect(_Schema.post_fields)
+# class adminSignUp(Resource):
+#     def post(self):
+#         req = request.form
+#         name = req['username']
+#         mail = req['email']
+#         passwd = req['password']
 
-        res = ldap.add_user(user_name=name, user_sn=name, user_gname=name, user_mail=mail, user_passwd=passwd, isUser=False)
+#         res = ldap.add_user(user_id=name, user_name=name, user_gname=name, user_mail=mail, user_passwd=passwd, isUser=False)
+#         if res == True:
+#             body = '{ "Success": true }'
+#             return Response(response=json.dumps(body), status=200, mimetype="application/json")
+#         elif res == "user":
+#             body = '{ "Error": { "code": 409, "title": "Duplicated user" } }'
+#             return Response(response=json.dumps(body), status=409, mimetype="application/json")
+#         elif res == "mail":
+#             body = '{ "Error": { "code": 409, "title": "Duplicated email" } }'
+#             return Response(response=json.dumps(body), status=409, mimetype="application/json")
+#         elif res == 409:
+#             body = '{ "Error": { "code": 409, "title": "Duplicated project" } }'
+#             return Response(response=json.dumps(body), status=409, mimetype="application/json")
+#         else:
+#             body = '{ "Success": false }'
+#             return Response(response=json.dumps(body), status=500, mimetype="application/json")
+        
+# 개인 회원 정보 변경
+@user_api.route('/')
+#@user_api.expect(_Schema.post_fields)
+class group(Resource):
+    def patch(self):
+        req = request.form
+        id =  req['id']
+        user_name = req['username']
+        mail = req['email']
+        phone = req['phone']
+        address = req['address']
+
+        res = ldap.modify_user(id, user_name, mail)
         if res == True:
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error": { "code": 409, "title": "Duplicated user" } }'
-            return Response(response=json.dumps(body), status=409, mimetype="application/json")
-        elif res == "mail":
-            body = '{ "Error": { "code": 409, "title": "Duplicated email" } }'
-            return Response(response=json.dumps(body), status=409, mimetype="application/json")
-        elif res == 409:
-            body = '{ "Error": { "code": 409, "title": "Duplicated project" } }'
-            return Response(response=json.dumps(body), status=409, mimetype="application/json")
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
         
+# 기업 회원 정보 변경
+@user_api.route('/business')
+#@user_api.expect(_Schema.post_fields)
+class group(Resource):
+    def patch(self):
+        req = request.form
+        id = req['id']
+        company = req['company']
+        mail = req['email']
+        #manager = req['manager']
+        phone = req['phone']
+        address = req['address']
+        registration_num = req['registration_num']
+
+        res = ldap.modify_business_user(id, company, mail)
+        if res == True:
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
+        elif res == "user":
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
+        else:
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")
+
+# 비밀번호 변경
+@user_api.route('/password')
+#@user_api.expect(_Schema.post_fields)
+class group(Resource):
+    def patch(self):
+        req = request.form
+        user_id = req.get('id')
+        password = req.get('password')
+
+        res = ldap.modify_password(user_id, password)
+        if res == True:
+            body = '{ "Success": true }'
+            return Response(response=json.dumps(body), status=200, mimetype="application/json")
+        elif res == "user":
+            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            return Response(response=json.dumps(body), status=404, mimetype="application/json")
+        else:
+            body = '{ "Success": false }'
+            return Response(response=json.dumps(body), status=500, mimetype="application/json")      
+
 @group_api.route('/')
 @group_api.expect(_Schema.post_fields)
 class group(Resource):
