@@ -201,7 +201,7 @@ class user(Resource):
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
             body = '{ "Success": false }'
@@ -226,7 +226,7 @@ class user(Resource):
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
             body = '{ "Success": false }'
@@ -246,7 +246,7 @@ class user(Resource):
             body = '{ "Success": true }'
             return Response(response=json.dumps(body), status=200, mimetype="application/json")
         elif res == "user":
-            body = '{ "Error" : { "code": 404.  "title": "User not found" } }'
+            body = '{ "Error" : { "code": 404,  "title": "User not found" } }'
             return Response(response=json.dumps(body), status=404, mimetype="application/json")
         else:
             body = '{ "Success": false }'
