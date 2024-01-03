@@ -14,6 +14,7 @@ api = Api(app, version='1.0', title='인증 API', description='Swagger', doc="/a
 auth_api = api.namespace('auth', description='회원가입/탈퇴 API')
 user_api = api.namespace('user', description="회원 정보 관련 API")
 group_api = api.namespace('group', description='사용자 초대 API')
+check_api = api.namespace('check', description='중복 확인 API')
 
 class _Schema():
     post_personal_user_fields = auth_api.model("[개인 회원] 회원 가입 시 필요한 데이터", {
@@ -33,6 +34,11 @@ class _Schema():
         'phone': fields.String(description="전화번호", example="02-0000-0000", required=True),
         'address': fields.String(description="주소", example="서울특별시 성북구 화랑도 11길 26", required=True),
         'registration_num': fields.String(description="사업자 등록 번호", example="114-54-235642", required=True),
+    })
+
+    get_duplication_check_fields = auth_api.model("아이디 or 이메일 중복 확인 시 필요한 데이터", {
+        'id': fields.String(description="중복 확인 할 사용자 아이디", example="cwy"),
+        'email': fields.String(description="중복 확인 할 사용자 이메일", example="wychoi@devstack.co.kr")
     })
 
     patch_group_user_fields = auth_api.model("그룹 사용자 초대, 제거 시 필요한 데이터", {
@@ -69,7 +75,7 @@ class _Schema():
 upload_parser = auth_api.parser()
 upload_parser.add_argument('file', location='files', type='FileStorage', required=True)
 
-@auth_api.route('/')
+@auth_api.route('')
 class signUp(Resource):
     ## 개인 회원 회원가입
     @auth_api.expect(_Schema.post_personal_user_fields)
@@ -156,6 +162,41 @@ class signUp(Resource):
         else:
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")
+
+query_parser = check_api.parser()
+query_parser.add_argument('id', type='String', required=False)
+query_parser.add_argument('email', type='String', required=False)
+
+@check_api.route('')
+class checkDuplication(Resource):
+    @check_api.expect(query_parser)
+    def get(self):
+        req = request.args
+        id = req.get('id')
+        mail = req.get('email')
+
+        if id is None and mail is None:
+            body = '{ "code": 400, "title": "Either id or email is needed" }' 
+            return Response(response=json.dumps(body), status=400, mimetype="application/json") 
+
+        if id is not None:
+            res = ldap.check_user(id)
+            if len(res) > 0:
+                body = '{ "code": 409, "title": "Duplicated user exists" }'
+                return Response(response=json.dumps(body), status=409, mimetype="application/json")
+            else:
+                body = '{ "code": 200, "title": "No duplicated user exists" }'
+                return Response(response=json.dumps(body), status=200, mimetype="application/json")
+        
+        if mail is not None:
+            res = ldap.check_email(mail)
+            if res == "mail duplication":
+                body = '{ "code": 409, "title": "Duplicated email exists" }'
+                return Response(response=json.dumps(body), status=409, mimetype="application/json")
+            else:
+                body = '{ "code": 200, "title": "No duplicated email exists" }'
+                return Response(response=json.dumps(body), status=200, mimetype="application/json")
+
 
 # @auth_api.route('/admin')
 # @auth_api.expect(_Schema.post_fields)
@@ -250,9 +291,13 @@ class user(Resource):
         else:
             body = '{ "Success": false }'
             return Response(response=json.dumps(body), status=500, mimetype="application/json")      
+        
+query_parser2 = group_api.parser()
+query_parser2.add_argument('group', type='String', required=True)
+query_parser2.add_argument('uesr', type='String', required=True)
 
 @group_api.route('/')
-@group_api.expect(_Schema.patch_group_user_fields)
+@group_api.expect(query_parser2)
 class group(Resource):
     def patch(self):
         req = request.args
