@@ -77,13 +77,8 @@ def post_project_id(project_name):
 
 def delete_project(project_name):
     project_id = kc_group.get_project_id(project_name)
-    ks_auth.keystone.projects.delete(project=project_id)
-    ## openstackclient 활용
-    #res = os.popen(". /app/openrc && openstack project delete " + project_name).read()
-
-def delete_project(project_name):
-    project_id = kc_group.get_project_id(project_name)
-    ks_auth.keystone.projects.delete(project=project_id)
+    if project_id is not None:
+        ks_auth.keystone.projects.delete(project=project_id)
     ## openstackclient 활용
     #res = os.popen(". /app/openrc && openstack project delete " + project_name).read()
 

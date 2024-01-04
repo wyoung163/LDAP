@@ -77,13 +77,19 @@ def get_group_id(user_id):
                        headers=headers,
                        verify=False)
     global group_name, group_id
-    group_id = res.json()[0].get("id")
-    group_name = res.json()[0].get("name")
+    if len(res.json()) > 0:
+        group_id = res.json()[0].get("id")
+        group_name = res.json()[0].get("name")
+    else:
+        group_id = ""
+        group_name = ""
 
 # KC group의 attribute, project_id 조회
 def get_project_id(project_name):
     kc_client.post_admin_access_token()
     get_group_id(project_name)
+    if group_id == "":
+        return
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + kc_client.access_token
